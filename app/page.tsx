@@ -1,57 +1,49 @@
-import Image from 'next/image'
-import styles from './page.module.css'
+import { NextPage } from 'next';
+import Image from 'next/image';
+import Link from 'next/link';
+import { use } from 'react';
+import { getBlogs } from '../lib/blogs';
 
-export default function Home() {
-  return (
-    <div className={styles.container}>
-      <main className={styles.main}>
-        <h1 className={styles.title}>
-          Welcome to <a href="https://nextjs.org">Next.js 13!</a>
-        </h1>
-
-        <p className={styles.description}>
-          Get started by editing{' '}
-          <code className={styles.code}>app/page.tsx</code>
-        </p>
-
-        <div className={styles.grid}>
-          <a href="https://beta.nextjs.org/docs" className={styles.card}>
-            <h2>Documentation &rarr;</h2>
-            <p>Find in-depth information about Next.js 13</p>
-          </a>
-
-          <a
-            href="https://github.com/vercel/next.js/tree/canary/examples"
-            className={styles.card}
-          >
-            <h2>Examples &rarr;</h2>
-            <p>Explore the Next.js 13 playground.</p>
-          </a>
-
-          <a
-            href="https://vercel.com/templates/next.js/app-directory?utm_source=create-next-app&utm_medium=default-template&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-            className={styles.card}
-          >
-            <h2>Deploy &rarr;</h2>
-            <p>Deploy your Next.js site to a public URL with Vercel.</p>
-          </a>
-        </div>
-      </main>
-
-      <footer className={styles.footer}>
-        <a
-          href="https://vercel.com?utm_source=create-next-app&utm_medium=default-template&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Powered by{' '}
-          <span className={styles.logo}>
-            <Image src="/vercel.svg" alt="Vercel Logo" width={72} height={16} />
-          </span>
-        </a>
-      </footer>
-    </div>
-  )
+async function getInitialBlogs() {
+  const blogs = getBlogs();
+  return blogs;
 }
+
+const shortify = (text: string, maxLength = 60) => {
+  if (text.length <= maxLength) {
+    return text;
+  }
+
+  return text.substring(0, maxLength) + ' ...';
+};
+
+const Page: NextPage = () => {
+  const blogs = use(getInitialBlogs());
+
+  return (
+    <div>
+      <h2 className="sr-only">Blogs</h2>
+
+      <div className="grid grid-cols-1 gap-y-10 gap-x-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 xl:gap-x-8">
+        {blogs.map((blog) => (
+          <Link key={blog.slug} href={`/blogs/${blog.slug}`} className="group">
+            <div className="relative aspect-w-1 aspect-h-1 w-full overflow-hidden rounded-lg bg-gray-200 xl:aspect-w-7 xl:aspect-h-8">
+              <Image
+                fill
+                src={blog.coverImage}
+                alt={''}
+                className="h-full w-full object-cover object-center group-hover:opacity-75"
+              />
+            </div>
+            <h3 className="mt-4 text-sm text-gray-700">{blog.title}</h3>
+            <p className="mt-1 text-md font-medium text-gray-900">
+              {shortify(blog.description, 100)}
+            </p>
+          </Link>
+        ))}
+      </div>
+    </div>
+  );
+};
+
+export default Page;
